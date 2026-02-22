@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#080812">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لنا وحدنا 🌹</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<!-- Firebase Compat SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-deep:    #080812;
+  --bg-panel:   rgba(15,10,25,0.85);
+  --bg-card:    rgba(30,15,40,0.7);
+  --rose:       #e8517a;
+  --rose-light: #ff8fab;
+  --rose-dark:  #9b2c4e;
+  --gold:       #c9a96e;
+  --gold-light: #f0d08a;
+  --text:       #f5e6ee;
+  --text-muted: #a08898;
+  --border:     rgba(200,100,130,0.2);
+  --glow:       0 0 30px rgba(232,81,122,0.3);
+  --glow-sm:    0 0 12px rgba(232,81,122,0.2);
+  --radius:     16px;
+  --font-ar:    'Tajawal', sans-serif;
+  --font-romantic: 'Dancing Script', cursive;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: var(--font-ar);
+  overflow: hidden;
+}
+
+/* ===== BACKGROUND PARTICLES ===== */
+#bg-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== SCREENS ===== */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.96);
+}
+
+/* ===== LOGIN SCREEN ===== */
+#login-screen {
+  background: radial-gradient(ellipse at 50% 40%, rgba(155,44,78,0.25) 0%, transparent 70%),
+              radial-gradient(ellipse at 20% 80%, rgba(100,30,80,0.2) 0%, transparent 60%),
+              var(--bg-deep);
+  flex-direction: column;
+  gap: 40px;
+}
+
+.login-title {
+  font-family: var(--font-romantic);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  color: var(--rose-light);
+  text-shadow: 0 0 40px rgba(232,81,122,0.6), 0 0 80px rgba(232,81,122,0.2);
+  text-align: center;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+.login-subtitle {
+  font-size: 1rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: -30px;
+  letter-spacing: 2px;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { text-shadow: 0 0 40px rgba(232,81,122,0.6), 0 0 80px rgba(232,81,122,0.2); }
+  50%       { text-shadow: 0 0 60px rgba(232,81,122,0.9), 0 0 120px rgba(232,81,122,0.4); }
+}
+
+.login-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px;
+  width: min(420px, 92vw);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--glow), inset 0 1px 0 rgba(255,255,255,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-label {
+  font-size: 0.85rem;
+  color: var(--gold);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.login-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: var(--text);
+  font-family: var(--font-ar);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.login-input:focus {
+  border-color: var(--rose);
+  box-shadow: 0 0 0 3px rgba(232,81,122,0.15);
+}
+.login-input::placeholder { color: var(--text-muted); }
+
+.role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.role-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: var(--text-muted);
+  font-family: var(--font-ar);
+  font-size: 0.9rem;
+}
+.role-btn .role-icon { font-size: 2rem; }
+.role-btn:hover, .role-btn.active {
+  border-color: var(--rose);
+  background: rgba(232,81,122,0.12);
+  color: var(--text);
+  box-shadow: 0 0 20px rgba(232,81,122,0.2);
+}
+
+.enter-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--rose-dark), var(--rose));
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-family: var(--font-ar);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 20px rgba(232,81,122,0.4);
+}
+.enter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(232,81,122,0.5);
+}
+.enter-btn:active { transform: translateY(0); }
+
+/* ===== MAIN APP ===== */
+#app-screen {
+  z-index: 5;
+  padding: 0;
+  align-items: stretch;
+  background: transparent;
+}
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  width: 100vw;
+  gap: 0;
+}
+
+/* ===== HEADER ===== */
+.app-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: rgba(8,8,18,0.9);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  z-index: 20;
+}
+
+.header-title {
+  font-family: var(--font-romantic);
+  font-size: 1.8rem;
+  color: var(--rose-light);
+  text-shadow: 0 0 20px rgba(232,81,122,0.4);
+}
+
+.presence-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  transition: all 0.5s;
+}
+.presence-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #555;
+  transition: background 0.5s, box-shadow 0.5s;
+}
+.presence-badge.both-online .presence-dot {
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74,222,128,0.6);
+}
+.presence-badge.both-online { border-color: rgba(74,222,128,0.3); }
+
+.user-info-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--gold);
+}
+.user-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--rose-dark), var(--gold));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: white;
+  border: 1.5px solid var(--gold);
+}
+
+/* ===== CANVAS AREA ===== */
+.canvas-area {
+  position: relative;
+  background: rgba(5,5,15,0.95);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.canvas-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(15,10,25,0.9);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.tool-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tool-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+.tool-btn {
+  padding: 7px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-ar);
+  white-space: nowrap;
+}
+.tool-btn:hover { border-color: var(--rose); color: var(--text); }
+.tool-btn.active {
+  background: rgba(232,81,122,0.2);
+  border-color: var(--rose);
+  color: var(--rose-light);
+  box-shadow: var(--glow-sm);
+}
+
+.color-palette {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.color-swatch {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+.color-swatch:hover { transform: scale(1.2); }
+.color-swatch.active { border-color: white; transform: scale(1.15); }
+
+.brush-size-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+.brush-size-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--rose);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(232,81,122,0.5);
+}
+
+#drawing-canvas {
+  flex: 1;
+  cursor: crosshair;
+  display: block;
+  width: 100%;
+  touch-action: none;
+}
+
+/* ===== CHAT AREA ===== */
+.chat-area {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.chat-header-icon { font-size: 1.2rem; }
+.chat-header-title { color: var(--text); font-weight: 500; }
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.msg-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 78%;
+  animation: msg-in 0.3s ease;
+}
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.msg-wrapper.mine { align-self: flex-end; align-items: flex-end; }
+.msg-wrapper.theirs { align-self: flex-start; align-items: flex-start; }
+
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+.msg-wrapper.mine .msg-bubble {
+  background: linear-gradient(135deg, var(--rose-dark), #c0394e);
+  border-bottom-right-radius: 4px;
+  color: white;
+  box-shadow: 0 2px 12px rgba(232,81,122,0.3);
+}
+.msg-wrapper.theirs .msg-bubble {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+  color: var(--text);
+}
+
+.msg-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.chat-input-area {
+  padding: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  background: rgba(8,8,18,0.6);
+}
+
+.chat-textarea {
+  flex: 1;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-family: var(--font-ar);
+  font-size: 0.9rem;
+  outline: none;
+  resize: none;
+  max-height: 100px;
+  transition: border-color 0.3s;
+  line-height: 1.4;
+}
+.chat-textarea:focus { border-color: var(--rose); }
+.chat-textarea::placeholder { color: var(--text-muted); }
+
+.send-btn {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--rose-dark), var(--rose));
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(232,81,122,0.4);
+  flex-shrink: 0;
+}
+.send-btn:hover { transform: scale(1.05); box-shadow: 0 4px 20px rgba(232,81,122,0.5); }
+.send-btn:active { transform: scale(0.95); }
+
+/* ===== TYPING INDICATOR ===== */
+.typing-indicator {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+}
+.typing-indicator.visible { display: flex; }
+.typing-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--rose);
+  animation: typing-bounce 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ===== CLEAR MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.modal-overlay.visible { opacity: 1; pointer-events: all; }
+.modal-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: var(--glow);
+  transform: scale(0.95);
+  transition: transform 0.3s;
+}
+.modal-overlay.visible .modal-card { transform: scale(1); }
+.modal-icon { font-size: 3rem; margin-bottom: 12px; }
+.modal-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+.modal-text { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px; }
+.modal-btns { display: flex; gap: 12px; justify-content: center; }
+.modal-btn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--font-ar);
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+.modal-btn.danger {
+  background: linear-gradient(135deg, #7f0000, #c0394e);
+  border-color: var(--rose);
+  color: white;
+  box-shadow: 0 2px 12px rgba(200,0,0,0.3);
+}
+.modal-btn:hover { transform: translateY(-1px); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr 1fr;
+  }
+  .canvas-area { border-right: none; border-bottom: 1px solid var(--border); }
+  .app-header { padding: 10px 14px; }
+  .header-title { font-size: 1.3rem; }
+  .canvas-toolbar { gap: 5px; padding: 8px 10px; }
+  .tool-btn { padding: 5px 8px; font-size: 0.75rem; }
+  .color-swatch { width: 18px; height: 18px; }
+  .brush-size-slider { width: 60px; }
+}
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(30,15,40,0.95);
+  border: 1px solid var(--rose);
+  border-radius: 12px;
+  padding: 10px 20px;
+  color: var(--text);
+  font-size: 0.85rem;
+  z-index: 999;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== EMPTY CHAT ===== */
+.chat-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.chat-empty-icon { font-size: 3rem; opacity: 0.4; }
+</style>
+</head>
+<body>
+
+<!-- Background Canvas for Hearts -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Clear Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-card">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">مسح الكل؟</div>
+    <div class="modal-text">هيتمسح الرسم والدردشة كلها للاتنين. مش هتقدر ترجعها.</div>
+    <div class="modal-btns">
+      <button class="modal-btn" onclick="closeModal()">لأ، بقى</button>
+      <button class="modal-btn danger" onclick="confirmClear()">امسح الكل</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="screen" id="login-screen">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:20px;width:100%;">
+    <div class="login-title">لنا وحدنا 🌹</div>
+    <div class="login-subtitle">مكانك الخاص معاه / معاها</div>
+    <div class="login-card">
+      <div>
+        <div class="login-label">اسمك</div>
+        <input class="login-input" id="name-input" type="text" placeholder="اكتب اسمك هنا..." maxlength="30">
+      </div>
+      <div>
+        <div class="login-label">انت مين؟</div>
+        <div class="role-grid">
+          <button class="role-btn" id="role-1" onclick="selectRole('user1')">
+            <span class="role-icon">💙</span>
+            <span>الأول</span>
+          </button>
+          <button class="role-btn" id="role-2" onclick="selectRole('user2')">
+            <span class="role-icon">🌸</span>
+            <span>التانية</span>
+          </button>
+        </div>
+      </div>
+      <button class="enter-btn" onclick="enterApp()">ادخل الفضاء الخاص 🌹</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div class="screen hidden" id="app-screen">
+  <div class="app-layout">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-title">لنا وحدنا 🌹</div>
+      <div class="presence-badge" id="presence-badge">
+        <div class="presence-dot" id="presence-dot"></div>
+        <span id="presence-text">في انتظاره... 🌙</span>
+      </div>
+      <div class="user-info-badge">
+        <div class="user-avatar" id="user-avatar">؟</div>
+        <span id="user-name-display">—</span>
+      </div>
+    </header>
+
+    <!-- Canvas Area -->
+    <div class="canvas-area">
+      <div class="canvas-toolbar">
+        <div class="tool-group">
+          <button class="tool-btn active" id="btn-brush" onclick="setTool('brush')">🖌️ فرشة</button>
+          <button class="tool-btn" id="btn-eraser" onclick="setTool('eraser')">🧹 ممحاة</button>
+        </div>
+        <div class="tool-sep"></div>
+        <div class="tool-group">
+          <input class="brush-size-slider" type="range" id="brush-size" min="1" max="40" value="5">
+        </div>
+        <div class="tool-sep"></div>
+        <div class="color-palette" id="color-palette"></div>
+        <div class="tool-sep"></div>
+        <div class="tool-group">
+          <button class="tool-btn" onclick="saveCanvasImage()">💾 حفظ</button>
+          <button class="tool-btn" style="color:#ff6b6b;" onclick="openModal()">🗑️ مسح</button>
+        </div>
+      </div>
+      <canvas id="drawing-canvas"></canvas>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+      <div class="chat-header">
+        <span class="chat-header-icon">💬</span>
+        <span class="chat-header-title">دردشتنا</span>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-empty" id="chat-empty">
+          <div class="chat-empty-icon">💌</div>
+          <span>ابدأ الدردشة...</span>
+        </div>
+      </div>
+      <div style="padding: 0 16px 4px;">
+        <div class="typing-indicator" id="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <span style="font-size:0.75rem;color:var(--text-muted);margin-right:6px;" id="typing-name"></span>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <textarea class="chat-textarea" id="chat-input" placeholder="اكتب رسالتك... 💌" rows="1"></textarea>
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  🔥 FIREBASE CONFIG — استبدل القيم دي ببيانات مشروعك
+// ============================================================
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDCysmFwDbwEfS9v7KhjtzSBRiDCaknEtY",
+  authDomain: "mmmmm-83dc9.firebaseapp.com",
+  databaseURL: "https://mmmmm-83dc9-default-rtdb.firebaseio.com",
+  projectId: "mmmmm-83dc9",
+  storageBucket: "mmmmm-83dc9.firebasestorage.app",
+  messagingSenderId: "890988288322",
+  appId: "1:890988288322:web:27844eef7582ef0aacd0db",
+  measurementId: "G-ZCDGFFPXFM"
+};
+
+// ============================================================
+
+let db, isFirebaseReady = false;
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  isFirebaseReady = true;
+} catch(e) {
+  console.warn("Firebase not configured. Running in offline demo mode.");
+}
+
+// ===== STATE =====
+let myUserId   = null;   // 'user1' | 'user2'
+let myName     = '';
+let otherName  = '';
+
+// Canvas state
+let isDrawing      = false;
+let currentTool    = 'brush';
+let currentColor   = '#e8517a';
+let currentSize    = 5;
+let currentStrokeId = null;
+let lastX = 0, lastY = 0;
+let allStrokes     = {}; // strokeId → { user, color, size, eraser, points[] }
+let remoteStrokes  = {}; // live strokes being received
+
+const COLORS = [
+  '#e8517a','#ff8fab','#c9a96e','#f0d08a',
+  '#ffffff','#000000','#9b2c4e','#6c3483',
+  '#3498db','#1abc9c','#f39c12','#e74c3c'
+];
+
+// ===== BACKGROUND HEARTS =====
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx    = bgCanvas.getContext('2d');
+const hearts   = [];
+
+function Heart() {
+  this.reset = function() {
+    this.x = Math.random() * bgCanvas.width;
+    this.y = bgCanvas.height + 20;
+    this.size = Math.random() * 14 + 6;
+    this.speed = Math.random() * 0.6 + 0.3;
+    this.opacity = Math.random() * 0.35 + 0.05;
+    this.drift = (Math.random() - 0.5) * 0.5;
+    this.wobble = Math.random() * Math.PI * 2;
+  };
+  this.reset();
+  this.y = Math.random() * bgCanvas.height; // spread initially
+}
+
+function resizeBgCanvas() {
+  bgCanvas.width  = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+
+function drawHeart(ctx, x, y, size, opacity) {
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  ctx.fillStyle = '#e8517a';
+  ctx.beginPath();
+  ctx.moveTo(x, y + size * 0.3);
+  ctx.bezierCurveTo(x, y, x - size, y, x - size, y + size * 0.4);
+  ctx.bezierCurveTo(x - size, y + size * 0.85, x, y + size * 1.1, x, y + size * 1.25);
+  ctx.bezierCurveTo(x, y + size * 1.1, x + size, y + size * 0.85, x + size, y + size * 0.4);
+  ctx.bezierCurveTo(x + size, y, x, y, x, y + size * 0.3);
+  ctx.fill();
+  ctx.restore();
+}
+
+function animateHearts() {
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  hearts.forEach(h => {
+    h.y     -= h.speed;
+    h.wobble += 0.02;
+    h.x     += Math.sin(h.wobble) * h.drift;
+    if (h.y < -30) h.reset();
+    drawHeart(bgCtx, h.x, h.y, h.size, h.opacity);
+  });
+  requestAnimationFrame(animateHearts);
+}
+
+resizeBgCanvas();
+for (let i = 0; i < 30; i++) hearts.push(new Heart());
+animateHearts();
+window.addEventListener('resize', resizeBgCanvas);
+
+// ===== LOGIN =====
+let selectedRole = null;
+
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('role-1').classList.toggle('active', role === 'user1');
+  document.getElementById('role-2').classList.toggle('active', role === 'user2');
+}
+
+function enterApp() {
+  const nameInput = document.getElementById('name-input').value.trim();
+  if (!nameInput) { showToast('اكتب اسمك الأول 😊'); return; }
+  if (!selectedRole) { showToast('اختار مين انت 💙'); return; }
+
+  myUserId = selectedRole;
+  myName   = nameInput;
+  otherName = myUserId === 'user1' ? 'التاني 🌸' : 'التاني 💙';
+
+  localStorage.setItem('userData', JSON.stringify({ name: myName, role: myUserId }));
+
+  document.getElementById('user-name-display').textContent = myName;
+  document.getElementById('user-avatar').textContent = myName[0];
+
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+
+  initApp();
+}
+
+// Auto-fill from localStorage
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = JSON.parse(localStorage.getItem('userData') || 'null');
+  if (saved) {
+    document.getElementById('name-input').value = saved.name;
+    selectRole(saved.role);
+  }
+});
+
+// ===== INIT APP =====
+function initApp() {
+  setupCanvas();
+  setupColorPalette();
+  setupPresence();
+  if (isFirebaseReady) {
+    loadCanvasStrokes();
+    listenToChat();
+    listenToTyping();
+    listenToRemoteStrokes();
+  }
+  setupChatInput();
+}
+
+// ===== CANVAS SETUP =====
+const drawCanvas = document.getElementById('drawing-canvas');
+const ctx        = drawCanvas.getContext('2d');
+
+function resizeDrawCanvas() {
+  const area = drawCanvas.parentElement;
+  const toolbar = area.querySelector('.canvas-toolbar');
+  const w = area.clientWidth;
+  const h = area.clientHeight - toolbar.offsetHeight;
+
+  // Save current drawing
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width  = drawCanvas.width;
+  tempCanvas.height = drawCanvas.height;
+  tempCanvas.getContext('2d').drawImage(drawCanvas, 0, 0);
+
+  drawCanvas.width  = w;
+  drawCanvas.height = h;
+
+  // Restore
+  ctx.drawImage(tempCanvas, 0, 0);
+  redrawAllStrokes();
+}
+
+function setupCanvas() {
+  resizeDrawCanvas();
+  window.addEventListener('resize', resizeDrawCanvas);
+
+  drawCanvas.addEventListener('mousedown',  startDraw);
+  drawCanvas.addEventListener('mousemove',  continueDraw);
+  drawCanvas.addEventListener('mouseup',    endDraw);
+  drawCanvas.addEventListener('mouseleave', endDraw);
+
+  drawCanvas.addEventListener('touchstart',  e => { e.preventDefault(); startDraw(e.touches[0]); }, { passive: false });
+  drawCanvas.addEventListener('touchmove',   e => { e.preventDefault(); continueDraw(e.touches[0]); }, { passive: false });
+  drawCanvas.addEventListener('touchend',    e => { e.preventDefault(); endDraw(); }, { passive: false });
+
+  document.getElementById('brush-size').addEventListener('input', e => {
+    currentSize = parseInt(e.target.value);
+  });
+}
+
+function getPos(e) {
+  const rect = drawCanvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) * (drawCanvas.width / rect.width),
+    y: (e.clientY - rect.top)  * (drawCanvas.height / rect.height)
+  };
+}
+
+function startDraw(e) {
+  isDrawing = true;
+  const { x, y } = getPos(e);
+  lastX = x; lastY = y;
+  currentStrokeId = `${myUserId}_${Date.now()}`;
+
+  allStrokes[currentStrokeId] = {
+    user:  myUserId,
+    color: currentTool === 'eraser' ? null : currentColor,
+    size:  currentTool === 'eraser' ? currentSize * 3 : currentSize,
+    eraser: currentTool === 'eraser',
+    points: [{ x, y }]
+  };
+
+  if (isFirebaseReady) {
+    db.ref(`canvas/strokes/${currentStrokeId}`).set({
+      user:  myUserId,
+      color: currentTool === 'eraser' ? null : currentColor,
+      size:  currentTool === 'eraser' ? currentSize * 3 : currentSize,
+      eraser: currentTool === 'eraser',
+      points: [{ x, y }]
+    });
+  }
+
+  ctx.beginPath();
+  ctx.arc(x, y, (currentTool === 'eraser' ? currentSize*3 : currentSize) / 2, 0, Math.PI*2);
+  if (currentTool === 'eraser') {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = 'rgba(0,0,0,1)';
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = currentColor;
+  }
+  ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function continueDraw(e) {
+  if (!isDrawing || !currentStrokeId) return;
+  const { x, y } = getPos(e);
+
+  const stroke = allStrokes[currentStrokeId];
+  stroke.points.push({ x, y });
+
+  drawSegment(ctx, lastX, lastY, x, y,
+    stroke.eraser ? null : stroke.color,
+    stroke.size,
+    stroke.eraser
+  );
+
+  lastX = x; lastY = y;
+
+  if (isFirebaseReady) {
+    db.ref(`canvas/strokes/${currentStrokeId}/points`).set(stroke.points);
+  }
+}
+
+function endDraw() {
+  isDrawing = false;
+  currentStrokeId = null;
+}
+
+function drawSegment(c, x1, y1, x2, y2, color, size, eraser) {
+  c.save();
+  c.lineCap = 'round';
+  c.lineJoin = 'round';
+  c.lineWidth = size;
+  if (eraser) {
+    c.globalCompositeOperation = 'destination-out';
+    c.strokeStyle = 'rgba(0,0,0,1)';
+  } else {
+    c.globalCompositeOperation = 'source-over';
+    c.strokeStyle = color;
+  }
+  c.beginPath();
+  c.moveTo(x1, y1);
+  c.lineTo(x2, y2);
+  c.stroke();
+  c.restore();
+}
+
+function redrawAllStrokes() {
+  ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  Object.values(allStrokes).forEach(stroke => {
+    if (!stroke.points || stroke.points.length < 1) return;
+    const pts = stroke.points;
+    // dot for single point
+    if (pts.length === 1) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(pts[0].x, pts[0].y, stroke.size / 2, 0, Math.PI*2);
+      if (stroke.eraser) {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fillStyle = 'rgba(0,0,0,1)';
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = stroke.color;
+      }
+      ctx.fill();
+      ctx.restore();
+    }
+    for (let i = 1; i < pts.length; i++) {
+      drawSegment(ctx, pts[i-1].x, pts[i-1].y, pts[i].x, pts[i].y,
+                  stroke.color, stroke.size, stroke.eraser);
+    }
+  });
+}
+
+// ===== LOAD CANVAS FROM FIREBASE =====
+function loadCanvasStrokes() {
+  db.ref('canvas/strokes').once('value', snap => {
+    const data = snap.val() || {};
+    allStrokes = data;
+    redrawAllStrokes();
+  });
+}
+
+// ===== LISTEN TO REMOTE STROKES (live) =====
+function listenToRemoteStrokes() {
+  db.ref('canvas/strokes').on('child_added', snap => {
+    const id = snap.key;
+    const stroke = snap.val();
+    if (!allStrokes[id]) {
+      allStrokes[id] = stroke;
+    }
+    // Listen for updates to this stroke's points (live drawing)
+    db.ref(`canvas/strokes/${id}/points`).on('value', pSnap => {
+      const points = pSnap.val();
+      if (!points) return;
+      if (!allStrokes[id]) allStrokes[id] = stroke;
+      allStrokes[id].points = points;
+      redrawAllStrokes();
+    });
+  });
+
+  db.ref('canvas/strokes').on('child_removed', snap => {
+    delete allStrokes[snap.key];
+    redrawAllStrokes();
+  });
+}
+
+// ===== TOOLS =====
+function setTool(tool) {
+  currentTool = tool;
+  document.getElementById('btn-brush').classList.toggle('active', tool === 'brush');
+  document.getElementById('btn-eraser').classList.toggle('active', tool === 'eraser');
+  drawCanvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+}
+
+function setupColorPalette() {
+  const palette = document.getElementById('color-palette');
+  COLORS.forEach(c => {
+    const swatch = document.createElement('div');
+    swatch.className = 'color-swatch';
+    swatch.style.background = c;
+    swatch.style.border = c === '#ffffff' ? '2px solid #555' : '2px solid transparent';
+    if (c === currentColor) swatch.classList.add('active');
+    swatch.onclick = () => {
+      currentColor = c;
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      swatch.classList.add('active');
+      setTool('brush');
+    };
+    palette.appendChild(swatch);
+  });
+}
+
+function saveCanvasImage() {
+  const link = document.createElement('a');
+  link.download = 'لنا_وحدنا.png';
+  link.href = drawCanvas.toDataURL();
+  link.click();
+  showToast('تم حفظ الصورة 💾');
+}
+
+// ===== CLEAR CANVAS & CHAT =====
+function openModal() { document.getElementById('modal').classList.add('visible'); }
+function closeModal() { document.getElementById('modal').classList.remove('visible'); }
+
+function confirmClear() {
+  ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  allStrokes = {};
+  if (isFirebaseReady) {
+    db.ref('canvas').remove();
+    db.ref('chat').remove();
+  }
+  document.getElementById('chat-messages').innerHTML = `
+    <div class="chat-empty" id="chat-empty">
+      <div class="chat-empty-icon">💌</div>
+      <span>ابدأ الدردشة...</span>
+    </div>`;
+  closeModal();
+  showToast('تم المسح 🗑️');
+}
+
+// ===== CHAT =====
+let typingTimer = null;
+
+function setupChatInput() {
+  const input = document.getElementById('chat-input');
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  input.addEventListener('input', () => {
+    if (isFirebaseReady) {
+      db.ref(`chat/typing/${myUserId}`).set({ name: myName, t: Date.now() });
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        db.ref(`chat/typing/${myUserId}`).remove();
+      }, 2000);
+    }
+    // Auto resize
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+  });
+}
+
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const msg = { sender: myUserId, name: myName, text, t: Date.now() };
+
+  if (isFirebaseReady) {
+    db.ref('chat/messages').push(msg);
+    db.ref(`chat/typing/${myUserId}`).remove();
+  } else {
+    renderMessage(msg);
+  }
+
+  input.value = '';
+  input.style.height = 'auto';
+}
+
+function listenToChat() {
+  db.ref('chat/messages').on('child_added', snap => {
+    const msg = snap.val();
+    const empty = document.getElementById('chat-empty');
+    if (empty) empty.remove();
+    renderMessage(msg);
+  });
+}
+
+function renderMessage(msg) {
+  const mine = msg.sender === myUserId;
+  const wrapper = document.createElement('div');
+  wrapper.className = `msg-wrapper ${mine ? 'mine' : 'theirs'}`;
+
+  const time = new Date(msg.t).toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' });
+  wrapper.innerHTML = `
+    <div class="msg-bubble">${escapeHtml(msg.text)}</div>
+    <div class="msg-meta">${mine ? '' : (msg.name + ' · ')}${time}</div>
+  `;
+
+  const container = document.getElementById('chat-messages');
+  container.appendChild(wrapper);
+  container.scrollTop = container.scrollHeight;
+}
+
+function listenToTyping() {
+  const otherId = myUserId === 'user1' ? 'user2' : 'user1';
+  db.ref(`chat/typing/${otherId}`).on('value', snap => {
+    const data = snap.val();
+    const ind  = document.getElementById('typing-indicator');
+    const nameEl = document.getElementById('typing-name');
+    if (data && (Date.now() - data.t) < 3000) {
+      ind.classList.add('visible');
+      nameEl.textContent = `${data.name} بيكتب...`;
+    } else {
+      ind.classList.remove('visible');
+    }
+  });
+}
+
+// ===== PRESENCE =====
+function setupPresence() {
+  if (!isFirebaseReady) return;
+  const presRef = db.ref(`presence/${myUserId}`);
+  presRef.set({ name: myName, online: true, t: Date.now() });
+  presRef.onDisconnect().remove();
+
+  const otherId = myUserId === 'user1' ? 'user2' : 'user1';
+  db.ref(`presence/${otherId}`).on('value', snap => {
+    const data = snap.val();
+    const badge = document.getElementById('presence-badge');
+    const dot   = document.getElementById('presence-dot');
+    const text  = document.getElementById('presence-text');
+    if (data && data.online) {
+      badge.classList.add('both-online');
+      dot.style.background = '#4ade80';
+      text.textContent = `💚 احنا الاتنين هنا`;
+    } else {
+      badge.classList.remove('both-online');
+      dot.style.background = '#555';
+      text.textContent = `🌙 في انتظاره...`;
+    }
+  });
+}
+
+// ===== TOAST =====
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ===== UTILS =====
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>
